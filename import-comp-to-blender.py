@@ -350,6 +350,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
 
         with open(self.filepath) as f:
             data = json.load(f)
+        # Now data store the loaded Json structure
 
         fileVersion = data.get('version', 0)
         if fileVersion != 2:
@@ -662,7 +663,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
         col.prop(self, 'adjust_frame_start_end')
 
 def menu_func_import(self, context):
-    self.layout.operator(ImportAEComp.bl_idname, text="After Effects composition data, converted (.json)")
+    self.layout.operator(ImportAEComp.bl_idname, text="After Effects Cam Tracking Data (.json)")
 
 def register():
     bpy.utils.register_class(ImportAEComp)
