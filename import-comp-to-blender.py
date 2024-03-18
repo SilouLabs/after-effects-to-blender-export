@@ -38,6 +38,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
         options={'HIDDEN'},
     )
 
+    # Scale factor to map the pixel unit to physical unit (in meter)
     scale_factor: bpy.props.FloatProperty(
         name="Scale Factor",
         description="Amount to scale the imported layers by. The default (0.01) maps one pixel to one centimeter",
@@ -370,14 +371,23 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
         if self.handle_framerate == 'remap_times':
             desired_framerate = context.scene.render.fps
         else:
+            # 'set_framerate' or 'preserve_frame_numbers'
             desired_framerate = data['comp']['frameRate']
 
         if self.handle_framerate == 'set_framerate':
-            context.scene.render.fps = data['comp']['frameRate']
+            fr = data['comp']['frameRate']
+            # to handle non-integer framerate
+            if floor(fr) == fr:
+                context.scene.render.fps = int(fr)
+            else:
+                context.scene.render.fps = int(fr) + 1
+                context.scene.render.fps_base = (int(fr) + 1) / fr
 
+        # load description of AE layers
         for layer in data['layers']:
             if layer['type'] == 'av':
                 if layer['nullLayer']:
+                    # if it's a null layer, no data to load
                     obj_data = None
                 else:
                     width = data['sources'][layer['source']]['width'] * scale_factor
