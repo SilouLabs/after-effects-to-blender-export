@@ -179,6 +179,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
         '''
         fcurve.keyframe_points.add(len(keyframes))
         for i, keyframe in enumerate(keyframes):
+            # keyframe is the loaded value from JSON
             k = fcurve.keyframe_points[i]
             k.co_ui = [((i + start_frame) * desired_framerate) / comp_framerate, keyframe * mul + add]
             k.interpolation = 'LINEAR'
@@ -228,6 +229,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
                     add
                 )
             else:
+                # add the time series value in json['keyframes'] into the returned f-curve
                 self.import_baked_keyframe_channel(
                     fcurve,
                     prop_data['keyframes'],
@@ -392,6 +394,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
                 else:
                     width = data['sources'][layer['source']]['width'] * scale_factor
                     height = data['sources'][layer['source']]['height'] * scale_factor
+                    # vertices to form a 2D plane
                     verts = [
                         (0, 0, -height),
                         (width, 0, -height),
@@ -436,6 +439,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
                     any(channel['isKeyframed'] for channel in layer['anchorPoint']['channels']) or
                     any(abs(channel['value']) >= 1e-15 for channel in layer['anchorPoint']['channels'])
                 ):
+                    # creat an empty object as an anchor
                     anchor_parent = bpy.data.objects.new(layer['name'] + ' Anchor Point', None)
                     anchor_parent.empty_display_type = 'ARROWS'
                     added_objects.append(anchor_parent)
@@ -445,7 +449,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
                         prop_data=layer['anchorPoint'],
                         comp_framerate=data['comp']['frameRate'],
                         desired_framerate=desired_framerate,
-                        swizzle=(0, 2, 1),
+                        swizzle=(0, 2, 1), # switch Y-Z components
                         mul=(-scale_factor, scale_factor, -scale_factor)
                     )
                     transform_target.parent = anchor_parent
@@ -459,12 +463,13 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
                         comp_framerate=data['comp']['frameRate'],
                         desired_framerate=desired_framerate,
                         swizzle=(0, 2, 1),
-                        mul=(0.01, 0.01, 0.01)
+                        mul=(0.01, 0.01, 0.01) # convert percentage into float values
                     )
 
                 ANGLE_CONVERSION_FACTOR = pi / 180
                 if layer['type'] == 'camera':
                     # Rotate camera upwards 90 degrees along the X axis
+                    # So the camera initially points toward +Y direction
                     transform_target.rotation_mode = 'ZYX'
                     channel_swizzle = (0, 1, 2)
                     channel_add = (pi / 2, 0, 0)
