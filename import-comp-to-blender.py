@@ -193,7 +193,7 @@ class ImportAEComp(bpy.types.Operator, ImportHelper):
         if obj.animation_data is None:
             obj.animation_data_create()
         if obj.animation_data.action is None:
-            obj.animation_data.action = bpy.data.actions.new(obj.name + 'Action')
+            obj.animation_data.action = bpy.data.actions.new(obj.name + ' Action')
 
     def import_property(
         self,
